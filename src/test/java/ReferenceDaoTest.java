@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.Assert;
+import static org.junit.Assert.*;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -43,7 +43,7 @@ public class ReferenceDaoTest {
         reference.setTitle("Test title");
         reference.setPages("not a range of pages");
         Set<ConstraintViolation<Reference>> violations = validator.validate(reference);
-        Assert.isTrue(violations.size() == 1, "There should be one constraint violation for the pages field");
+        assertEquals("There should be one constraint violation for the pages field", 1, violations.size());
     }
 
     @Test
@@ -51,9 +51,9 @@ public class ReferenceDaoTest {
         Reference reference = getTestReference();
         referenceDao.create(reference);
 
-        Assert.notNull(reference.getId(), "Reference should have its id set after saving.");
+        assertNotNull("Reference should have its id set after saving.", reference.getId());
         Reference foundReference = em.find(Reference.class, reference.getId());
-        Assert.isTrue(reference.equals(foundReference), "Saved and found references should be equal");
+        assertEquals("Saved and found references should be equal", reference, foundReference);
     }
 
     @Test
@@ -70,7 +70,7 @@ public class ReferenceDaoTest {
         referenceDao.update(reference);
 
         Reference foundReference = em.find(Reference.class, reference.getId());
-        Assert.isTrue(reference.equals(foundReference), "Original and found references should be equal");
+        assertEquals("Original and found references should be equal", reference, foundReference);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class ReferenceDaoTest {
 
         referenceDao.remove(reference);
 
-        Assert.isTrue(getAllPersistedReferences().isEmpty(), "There should be no persisted references after remove");
+        assertTrue("There should be no persisted references after remove", getAllPersistedReferences().isEmpty());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -109,8 +109,17 @@ public class ReferenceDaoTest {
         Set<Reference> references = new HashSet<>(referenceDao.findAll());
         Set<Reference> expectedReferences = new HashSet<>(getAllPersistedReferences());
 
-        Assert.isTrue(references.equals(expectedReferences),
-            "References returned by the ReferenceDao should match persisted references");
+        assertEquals("References returned by the ReferenceDao should match persisted references",
+            expectedReferences, references);
+    }
+
+    @Test
+    public void testFindById() {
+        Reference reference = getTestReference();
+        em.persist(reference);
+
+        Reference foundReference = referenceDao.findById(reference.getId());
+        assertEquals(reference, foundReference);
     }
 
     private List<Reference> getAllPersistedReferences() {
